@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0d0d">
+  <title>WorkPulse</title>
+  <link rel="manifest" href="/m/manifest.webmanifest">
+  <link rel="icon" href="/m/icon-192.png">
+  <link rel="apple-touch-icon" href="/m/icon-192.png">
+  <link rel="stylesheet" href="/m/m.css">
+  <script>try { const t = localStorage.getItem("wp-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body>
+  <!-- PAIRING -->
+  <section id="pair" class="pair" hidden>
+    <div class="pair-box">
+      <img src="/m/icon-192.png" alt="" width="64" height="64">
+      <h1>Connect to your laptop</h1>
+      <p class="muted">On the laptop open the dashboard → <b>Settings → Connect a phone</b> (or run <code>.\workpulse connect</code>) and type the 6-digit code.</p>
+      <form id="pair-form">
+        <input id="pair-code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="123 456" aria-label="Pairing code">
+        <input id="pair-name" maxlength="64" placeholder="Phone name" aria-label="Phone name">
+        <button class="btn primary" id="pair-btn">Connect</button>
+      </form>
+      <p id="pair-msg" class="msg" role="status"></p>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div id="app" hidden>
+    <header class="top">
+      <div class="brand"><img src="/m/icon-192.png" alt="" width="26" height="26"><span>WorkPulse</span></div>
+      <button id="pill" class="pill off" aria-label="Tracking status, tap to pause or resume"><span class="dot"></span><span id="pill-text">…</span></button>
+    </header>
+    <div id="offline" class="banner" hidden>Can't reach your laptop. Same Wi-Fi? Laptop awake? <button class="link" id="retry">Retry</button></div>
+
+    <main>
+      <section id="v-home" class="view">
+        <div class="day-row"><button class="icon" id="prev" aria-label="Previous day">‹</button><span id="day-label"></span><button class="icon" id="next" aria-label="Next day">›</button></div>
+        <div class="hero card">
+          <div class="label">Digital day</div>
+          <div class="big" id="h-total">–</div>
+          <div class="split"><span>💻 <b id="h-laptop">–</b></span><span>📱 <b id="h-phone">–</b></span></div>
+        </div>
+        <div class="tiles">
+          <div class="tile"><div class="label">Focus score</div><div class="val" id="h-score">–</div><div class="sub" id="h-score-sub"></div></div>
+          <div class="tile"><div class="label">Longest focus</div><div class="val" id="h-streak">–</div><div class="sub" id="h-streak-sub"></div></div>
+          <div class="tile"><div class="label">Productive</div><div class="val" id="h-prod">–</div><div class="sub" id="h-prod-sub"></div></div>
+          <div class="tile"><div class="label">Pickups</div><div class="val" id="h-pickups">–</div><div class="sub">phone unlocks</div></div>
+        </div>
+        <div class="card"><div class="card-title">Laptop timeline</div><div id="timeline" class="timeline"></div><div id="tl-axis" class="axis"></div><div class="now-line muted" id="now"></div></div>
+        <div class="card"><div class="card-title">Where the time went</div><div id="cats" class="rows"></div></div>
+        <div class="card"><div class="card-title">💻 Top laptop apps</div><div id="lapps" class="rows"></div></div>
+        <div class="card"><div class="card-title">📱 Top phone apps</div><div id="papps" class="rows"></div></div>
+        <div class="card"><div class="card-title">💡 Insight</div><div id="insight" class="insight"></div></div>
+      </section>
+
+      <section id="v-coach" class="view" hidden>
+        <div id="thread" class="thread" aria-live="polite"></div>
+        <div class="chips" id="chips"></div>
+        <form id="chat-form" class="chat-form"><input id="chat-in" placeholder="Ask your coach…" maxlength="2000" autocomplete="off" aria-label="Message"><button class="btn primary">Send</button></form>
+      </section>
+
+      <section id="v-phone" class="view" hidden>
+        <div id="android-card" class="card" hidden>
+          <div class="card-title">📱 Automatic tracking</div>
+          <div id="android-status" class="muted"></div>
+          <div class="row"><button class="btn" id="sync-now">Sync now</button><button class="btn" id="grant" hidden>Allow usage access</button></div>
+        </div>
+        <div class="hero card"><div class="label">Phone today</div><div class="big" id="p-total">–</div><div class="split"><span id="p-pickups"></span><span id="p-source" class="muted"></span></div></div>
+        <div class="card"><div class="card-title">Apps</div><div id="p-apps" class="rows"></div></div>
+        <div class="card" id="manual-card">
+          <div class="card-title">Add screen time</div>
+          <p class="muted small">Using the Android app? It does this automatically. Otherwise type today's numbers, or read them from a Digital Wellbeing screenshot.</p>
+          <form id="manual">
+            <input name="total" placeholder="Total, e.g. 3h 20m" aria-label="Total screen time">
+            <textarea name="apps" rows="4" placeholder="Instagram = 1h 10m&#10;WhatsApp = 45m" aria-label="Apps"></textarea>
+            <div class="row"><button class="btn primary">Save</button><label class="btn file">📸 Screenshot<input type="file" id="shot" accept="image/*" hidden></label></div>
+            <p class="msg" id="manual-msg" role="status"></p>
+          </form>
+        </div>
+      </section>
+
+      <section id="v-plan" class="view" hidden>
+        <div class="card"><div class="card-title">🎯 Goals</div><div id="goals" class="rows"></div>
+          <form id="goal-form" class="inline"><input name="text" placeholder="New daily goal" maxlength="300" aria-label="New goal"><button class="btn">Add</button></form></div>
+        <div class="card"><div class="card-title">📝 Tasks</div><div id="tasks" class="rows"></div>
+          <form id="task-form" class="inline"><input name="text" placeholder="New task (e.g. @Riya deck by tomorrow)" maxlength="300" aria-label="New task"><button class="btn">Add</button></form></div>
+        <div class="card"><div class="card-title">🗺️ Next milestones</div><div id="milestones" class="rows"></div></div>
+      </section>
+
+      <section id="v-more" class="view" hidden>
+        <div class="card"><div class="card-title">This phone</div><div id="me" class="muted"></div></div>
+        <div class="card"><div class="card-title">Shortcuts</div>
+          <div class="list">
+            <a class="item" href="/" id="full">🖥️ Full dashboard (all charts)</a>
+            <button class="item" id="theme">◐ Switch light / dark</button>
+            <a class="item" id="apk" href="/m/workpulse.apk" download hidden>⬇️ Get the Android app (automatic phone tracking)</a>
+            <button class="item danger" id="unpair">Disconnect this phone</button>
+          </div>
+        </div>
+        <p class="muted small center">WorkPulse keeps everything on your laptop. This phone only talks to it over your Wi-Fi.</p>
+      </section>
+    </main>
+
+    <nav class="tabbar" role="tablist">
+      <button data-v="home" aria-selected="true"><span>🏠</span>Home</button>
+      <button data-v="coach"><span>💬</span>Coach</button>
+      <button data-v="phone"><span>📱</span>Phone</button>
+      <button data-v="plan"><span>🎯</span>Plan</button>
+      <button data-v="more"><span>⋯</span>More</button>
+    </nav>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+  <script src="/m/m.js"></script>
+</body>
+</html>

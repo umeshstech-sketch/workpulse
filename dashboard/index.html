@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WorkPulse</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233987e5'/><path d='M5 17h6l3-7 4 13 3-6h6' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+  <link rel="stylesheet" href="/assets/style.css">
+  <script>try { const t = localStorage.getItem("wp-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--series-1)"/><path d="M5 17h6l3-7 4 13 3-6h6" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>WorkPulse</span>
+    <span id="demo-badge" class="badge" hidden>demo data</span>
+  </div>
+  <div class="status">
+    <span id="status-pill" class="pill pill-off" role="status"><span class="dot"></span><span id="status-text">…</span></span>
+    <button id="pause-btn" class="btn">Pause</button>
+    <button id="theme-btn" class="btn btn-ghost" title="Toggle light/dark" aria-label="Toggle light or dark theme">◐</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-tab="today" aria-selected="true">Today</button>
+  <button role="tab" data-tab="week">Week</button>
+  <button role="tab" data-tab="digital">Digital day</button>
+  <button role="tab" data-tab="goals">Goals</button>
+  <button role="tab" data-tab="team">Team</button>
+  <button role="tab" data-tab="insights">Insights</button>
+  <button role="tab" data-tab="coach">Coach</button>
+  <button role="tab" data-tab="settings">Settings</button>
+</nav>
+
+<main>
+  <!-- TODAY -->
+  <section id="tab-today" class="tab">
+    <div class="day-nav">
+      <button class="btn btn-ghost" id="prev-day" aria-label="Previous day">‹</button>
+      <input type="date" id="day-picker" aria-label="Pick a day">
+      <button class="btn btn-ghost" id="next-day" aria-label="Next day">›</button>
+      <span id="now-line" class="muted"></span>
+    </div>
+
+    <div id="empty-day" class="card empty" hidden>
+      <p><strong>No activity recorded for this day yet.</strong></p>
+      <p class="muted">Leave the tracker running (<code>.\workpulse start</code>), or preview with demo data: <code>.\workpulse demo seed</code> then <code>.\workpulse --demo serve</code>.</p>
+    </div>
+
+    <div id="day-content">
+      <div class="kpis" id="kpis"></div>
+
+      <div class="card">
+        <div class="card-head"><h2>Timeline</h2><div class="legend" id="timeline-legend"></div></div>
+        <div class="timeline-wrap">
+          <div id="timeline" class="timeline" aria-label="Activity timeline"></div>
+          <div id="timeline-axis" class="timeline-axis"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><h2>Categories</h2></div>
+          <div class="donut-row">
+            <div class="donut-box"><canvas id="cat-chart" aria-label="Time by category"></canvas></div>
+            <table class="tbl" id="cat-table"></table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Top apps</h2></div>
+          <div id="apps" class="bars"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>How today's focus score adds up</h2></div>
+        <div id="score-breakdown" class="breakdown"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WEEK -->
+  <section id="tab-week" class="tab" hidden>
+    <div class="kpis" id="week-kpis"></div>
+    <div class="card">
+      <div class="card-head"><h2>Active time per day</h2><div class="legend" id="week-legend"></div></div>
+      <div class="chart-box tall"><canvas id="week-chart" aria-label="Active time per day by category"></canvas></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h2>Focus score per day</h2></div>
+        <div class="chart-box"><canvas id="score-chart" aria-label="Focus score per day"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Streaks &amp; trend</h2></div>
+        <p id="trend-text" class="lead"></p>
+        <ul id="streaks" class="chips"></ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>This week by category</h2></div>
+      <table class="tbl wide" id="week-table"></table>
+    </div>
+  </section>
+
+  <!-- DIGITAL DAY (laptop + phone) -->
+  <section id="tab-digital" class="tab" hidden>
+    <div class="day-nav">
+      <button class="btn btn-ghost" id="dd-prev" aria-label="Previous day">‹</button>
+      <input type="date" id="dd-picker" aria-label="Pick a day">
+      <button class="btn btn-ghost" id="dd-next" aria-label="Next day">›</button>
+      <span id="dd-note" class="muted"></span>
+    </div>
+    <div class="kpis" id="dd-kpis"></div>
+    <div class="card">
+      <div class="card-head"><h2>Laptop + phone, last 7 days</h2><div class="legend" id="dd-legend"></div></div>
+      <div class="chart-box"><canvas id="dd-chart" aria-label="Laptop active time and phone screen time per day"></canvas></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h2>Where the time went</h2></div>
+        <table class="tbl wide" id="dd-cats"></table>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Phone apps</h2><span class="muted" id="dd-devices"></span></div>
+        <div id="dd-apps" class="bars"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Add phone screen time</h2><span class="muted">Phones only share daily totals, so there's no phone timeline</span></div>
+      <div class="phone-methods">
+        <div class="method">
+          <h3>📸 From a screenshot</h3>
+          <p class="muted">Screen Time (iPhone) or Digital Wellbeing (Android). The AI reads the numbers into the form below so you can check them. The image is never saved.</p>
+          <input type="file" id="shot-file" accept="image/png,image/jpeg,image/webp" aria-label="Screen time screenshot">
+          <button class="btn" id="shot-btn">Read screenshot</button>
+        </div>
+        <div class="method">
+          <h3>📄 From a file</h3>
+          <p class="muted">CSV (one row per app per day: date, app, time) or WorkPulse JSON. Re-importing a day replaces it.</p>
+          <input type="file" id="imp-file" accept=".csv,.json,text/csv,application/json" aria-label="CSV or JSON file">
+          <button class="btn" id="imp-btn">Import</button>
+        </div>
+        <div class="method">
+          <h3>⚙️ Automatic</h3>
+          <p class="muted">Tasker, an iOS Shortcut or a script can POST to the phone endpoint. Setup steps are in the README (Phone section).</p>
+          <button class="btn" id="setup-btn">Show endpoint &amp; token</button>
+          <pre id="setup-box" class="setup" hidden></pre>
+        </div>
+      </div>
+      <form id="manual-form" class="manual">
+        <h3>✍️ Enter or check the numbers</h3>
+        <div class="fields">
+          <label>Day <input type="date" name="day" required></label>
+          <label>Total screen time <input name="total" placeholder="3h 20m"></label>
+          <label>Pickups <input name="pickups" type="number" min="0" placeholder="optional"></label>
+          <label>Device <input name="device" placeholder="phone" maxlength="32"></label>
+          <label class="full">Apps (one per line: <code>Instagram = 1h 10m</code>)<textarea name="apps" rows="6" placeholder="Instagram = 1h 10m&#10;WhatsApp = 45m&#10;YouTube = 30m"></textarea></label>
+        </div>
+        <input type="hidden" name="source" value="manual">
+        <div class="row" style="margin-top:10px"><button class="btn btn-primary">Save phone day</button><span id="manual-msg" class="muted" role="status"></span></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- GOALS -->
+  <section id="tab-goals" class="tab" hidden>
+    <div class="card">
+      <div class="card-head"><h2>Goals</h2><span class="muted">Link a category and tracked time counts toward the goal automatically</span></div>
+      <form id="goal-form" class="inline-form">
+        <input name="text" placeholder="e.g. Ship the WorkPulse API" required maxlength="300" aria-label="Goal" class="grow">
+        <select name="kind" aria-label="Goal type"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="long-term">Long-term</option></select>
+        <select name="category" aria-label="Linked category"></select>
+        <input name="target_h" type="number" min="0.25" step="0.25" placeholder="Target h" aria-label="Target hours" class="narrow">
+        <input name="deadline" type="date" aria-label="Deadline">
+        <button class="btn btn-primary">Add goal</button>
+      </form>
+      <div id="goal-list" class="goal-list"></div>
+      <p id="goals-empty" class="muted" hidden>No goals yet. Start with one daily goal linked to Coding or Learning/AI, and one long-term goal for the roadmap.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Roadmap</h2><span class="muted">Coach-suggested or your own milestones. Tick them off as you go</span></div>
+      <div id="lt-goals" class="lt-goals"></div>
+      <div id="suggestions" class="suggestions" hidden></div>
+      <div id="roadmap" class="roadmap"></div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section id="tab-team" class="tab" hidden>
+    <div class="kpis" id="team-kpis"></div>
+    <div class="card">
+      <div class="card-head"><h2>Tasks</h2><span class="muted">Reminders go to your WhatsApp before they're due</span></div>
+      <form id="task-form" class="inline-form">
+        <input name="text" placeholder="e.g. Pitch deck for the hackathon" required maxlength="300" aria-label="Task" class="grow">
+        <select name="owner" aria-label="Owner"></select>
+        <input name="due" type="date" aria-label="Due date">
+        <button class="btn btn-primary">Add task</button>
+      </form>
+      <div class="board" id="board"></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h2>People</h2></div>
+        <div id="members" class="members"></div>
+        <form id="member-form" class="inline-form">
+          <input name="name" placeholder="Name" required maxlength="64" aria-label="Name">
+          <input name="role" placeholder="Role (cofounder, ML…)" maxlength="64" aria-label="Role">
+          <input name="contact" placeholder="Contact (optional)" maxlength="128" aria-label="Contact">
+          <button class="btn">Add</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Meetings</h2><span class="muted">Last 30 days</span></div>
+        <form id="meeting-form" class="inline-form">
+          <input name="title" placeholder="Standup, pitch prep…" required maxlength="200" aria-label="Meeting title" class="grow">
+          <input name="minutes" type="number" min="5" step="5" value="30" aria-label="Minutes" class="narrow">
+          <input name="attendees" placeholder="Riya, Arjun" aria-label="Attendees">
+          <input name="when" type="datetime-local" aria-label="When">
+          <button class="btn">Log</button>
+        </form>
+        <div id="meetings" class="meetings"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSIGHTS -->
+  <section id="tab-insights" class="tab" hidden>
+    <div class="grid-2">
+      <div class="card"><div class="card-head"><h2>🏆 What you're doing best</h2></div><ul id="ins-best" class="chips"></ul></div>
+      <div class="card"><div class="card-head"><h2>🛠️ What to improve</h2></div><ul id="ins-improve" class="chips"></ul></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>When you focus <span class="muted">(avg minutes per active day, last 14 days)</span></h2><div class="legend" id="hours-legend"></div></div>
+      <div class="chart-box"><canvas id="hours-chart" aria-label="Productive and entertainment minutes by hour of day"></canvas></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h2>Productive time by weekday</h2></div>
+        <div class="chart-box"><canvas id="weekday-chart" aria-label="Average productive time by weekday"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Where browsing &amp; entertainment time goes</h2></div>
+        <div id="sources" class="bars"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Consistency <span class="muted">(productive hours, last 30 days)</span></h2><div class="legend" id="cal-legend"></div></div>
+      <div id="calendar" class="calendar" aria-label="Productive hours per day for the last 30 days"></div>
+    </div>
+  </section>
+
+  <!-- COACH -->
+  <section id="tab-coach" class="tab" hidden>
+    <div class="card chat-card">
+      <div class="card-head"><h2>Coach</h2><span class="muted">Same brain as the WhatsApp bot. Messages you send here stay on this laptop.</span></div>
+      <div id="thread" class="thread" aria-live="polite"></div>
+      <div class="quick" id="quick"></div>
+      <form id="chat-form" class="chat-form">
+        <input id="chat-input" placeholder="Ask your coach, or try: today · plan · goal add …" maxlength="2000" autocomplete="off" aria-label="Message">
+        <button class="btn btn-primary" id="chat-send">Send</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="tab-settings" class="tab" hidden>
+    <form id="settings-form" class="settings">
+      <div class="card">
+        <div class="card-head"><h2>Tracking</h2></div>
+        <div class="fields">
+          <label>Idle after (min) <input type="number" step="0.5" min="0.5" name="tracking.idle_after_s" data-scale="60"></label>
+          <label>Away after (min) <input type="number" step="0.5" min="1" name="tracking.away_after_s" data-scale="60"></label>
+          <label>Sample every (s) <input type="number" min="1" max="60" name="tracking.sample_interval_s"></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Privacy</h2></div>
+        <label class="check"><input type="checkbox" name="privacy.capture_titles"> Store window titles <span class="muted">(off = titles only pick a category in memory, never saved)</span></label>
+        <div class="fields">
+          <label class="full">Never log apps (one per line, process name)<textarea name="privacy.exclude_apps" rows="3"></textarea></label>
+          <label class="full">Never log windows whose title contains (one per line)<textarea name="privacy.exclude_keywords" rows="4"></textarea></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Scoring</h2></div>
+        <div class="fields">
+          <label>Daily productive target (min) <input type="number" min="10" name="scoring.daily_target_min"></label>
+          <label>Full-points streak (min) <input type="number" min="10" name="scoring.streak_target_min"></label>
+          <label>Streak survives breaks up to (min) <input type="number" min="0" step="0.5" name="scoring.streak_break_tolerance_min"></label>
+          <label>Count breaks from (min) <input type="number" min="0" name="scoring.min_break_min"></label>
+        </div>
+        <fieldset class="cats"><legend>Productive categories</legend><div id="productive-cats"></div></fieldset>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>App → category</h2><span class="muted">process name without .exe (see <code>.\workpulse doctor</code>)</span></div>
+        <table class="tbl wide" id="apps-table"></table>
+        <div class="add-app">
+          <input id="new-app" placeholder="e.g. notion" aria-label="New app process name">
+          <select id="new-app-cat" aria-label="Category for new app"></select>
+          <button type="button" class="btn" id="add-app-btn">Add</button>
+        </div>
+      </div>
+      <div class="save-bar">
+        <button type="submit" class="btn btn-primary">Save settings</button>
+        <span id="save-msg" class="muted" role="status"></span>
+      </div>
+    </form>
+
+    <div class="card" id="connect-card">
+      <div class="card-head"><h2>📱 Connect a phone</h2><span class="muted">Mobile app at home, and (with Tailscale) when you're out</span></div>
+      <div class="row" style="align-items:center">
+        <label class="check"><input type="checkbox" id="lan-toggle"> Let paired phones on my Wi-Fi connect</label>
+        <span id="lan-msg" class="muted" role="status"></span>
+      </div>
+      <ul id="lan-warnings" class="warn-list"></ul>
+      <p class="muted" id="lan-on" hidden>Home Wi-Fi address: <b id="lan-url"></b></p>
+      <div class="row" style="align-items:center">
+        <label class="check"><input type="checkbox" id="remote-toggle"> Also when I'm out (via Tailscale)</label>
+        <span id="remote-msg" class="muted" role="status"></span>
+      </div>
+      <p class="muted">Tailscale is a free private network between your own devices: install it on this laptop and your phone with the same account. Nothing is opened to the internet, and data still goes only from the phone to this laptop.</p>
+      <ul id="remote-warnings" class="warn-list"></ul>
+      <p class="muted" id="remote-on" hidden>Away address: <b id="remote-url"></b></p>
+      <div id="pair-area" hidden>
+        <button class="btn btn-primary" id="pair-btn">Show a pairing code</button>
+        <div id="pair-box" class="pair-box" hidden>
+          <div class="pair-code" id="pair-code"></div>
+          <div class="muted">Valid 10 minutes, one phone.</div>
+          <div class="qrs">
+            <figure><div id="qr-web" class="qr"></div><figcaption>Phone camera → opens the web app</figcaption></figure>
+            <figure><div id="qr-app" class="qr"></div><figcaption>Android app → Scan, or type the code</figcaption></figure>
+          </div>
+          <p class="muted" id="apk-hint"></p>
+        </div>
+      </div>
+      <h3 class="sub-h">Paired phones</h3>
+      <div id="devices" class="members"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Your data</h2></div>
+      <p class="muted">Everything lives in <code>data/workpulse.db</code> on this laptop. Nothing is uploaded.</p>
+      <div class="row">
+        <a class="btn" href="/api/export.csv" download>Export CSV</a>
+        <button class="btn btn-danger" id="wipe-btn">Delete all data…</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="/assets/app.js"></script>
+<script src="/assets/planning.js"></script>
+<script src="/assets/phone.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The laptop is reached over your home Wi-Fi by IP address (http://192.168.x.x:8787). Android blocks plain
+     http by default, and a config can't allow-list "any private IP", so cleartext is allowed for this app.
+     Every request after pairing carries this phone's token; the laptop refuses everything else. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

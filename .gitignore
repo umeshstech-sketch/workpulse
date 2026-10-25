@@ -1,0 +1,40 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Secrets and personal data: never commit these
+.env
+.env.*
+!.env.example
+data/
+!data/.gitkeep
+*.db
+*.db-wal
+*.db-shm
+*.log
+*.token
+secrets/
+
+# Signing keys
+*.keystore
+*.jks
+*.p12
+*.pem
+
+# Android build output and machine-specific files
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+*.apk
+*.aab
+
+# Built artifacts and editor/tool folders
+dist/
+.claude/
+.idea/
+.vscode/

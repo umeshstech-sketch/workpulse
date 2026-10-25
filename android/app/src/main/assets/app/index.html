@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>WorkPulse</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><img src="icon.png" width="28" height="28" alt="">WorkPulse</div>
+    <button id="focus-pill" class="pill" hidden><span class="dot"></span><span id="focus-pill-text"></span></button>
+  </header>
+
+  <div id="banner" class="banner" hidden>
+    <b>One step to start tracking.</b> Android needs <i>Usage access</i> so WorkPulse can see which apps you use and for how long (never what's inside them).
+    <button class="btn primary" id="grant">Allow usage access</button>
+  </div>
+
+  <main>
+    <!-- TODAY -->
+    <section id="v-today" class="view">
+      <div class="day-nav">
+        <button class="icon" id="prev-day" aria-label="Previous day">‹</button>
+        <div class="day-title" id="day-title">Today</div>
+        <button class="icon" id="next-day" aria-label="Next day">›</button>
+      </div>
+      <div class="card hero">
+        <div class="label">Screen time</div>
+        <div class="big" id="t-total">0m</div>
+        <div class="meter"><span id="t-goal-bar"></span></div>
+        <div class="split small"><span id="t-goal"></span><span id="t-vs"></span></div>
+      </div>
+      <div class="card score-card">
+        <div class="score-row">
+          <div class="score" id="t-score"><svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" class="ring-bg"/><circle cx="22" cy="22" r="19" class="ring" id="t-score-ring"/></svg><b id="t-score-num">–</b></div>
+          <div><div class="card-title" style="margin:0">Balance score</div><div class="muted small" id="t-score-sub"></div></div>
+        </div>
+        <div id="t-score-parts" class="parts"></div>
+      </div>
+      <div class="tiles">
+        <div class="tile"><div class="label">Pickups</div><div class="val" id="t-pickups">0</div><div class="sub" id="t-pickups-sub"></div></div>
+        <div class="tile"><div class="label">First pickup</div><div class="val" id="t-first">–</div><div class="sub">after 4 AM</div></div>
+        <div class="tile"><div class="label">Longest stretch</div><div class="val" id="t-longest">–</div><div class="sub" id="t-longest-sub"></div></div>
+        <div class="tile"><div class="label">Focus time</div><div class="val" id="t-focus">0m</div><div class="sub" id="t-focus-sub"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Through the day</div>
+        <div id="t-hours" class="chart"></div>
+        <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>Day</span><span><i class="sw" style="background:var(--night)"></i>Bedtime hours</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Categories</div>
+        <div id="t-catbar" class="stack"></div>
+        <div id="t-cats" class="cat-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Insights</div>
+        <ul id="t-insights" class="insights"></ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Apps <span class="muted small">· tap one for details, limits and category</span></div>
+        <div id="t-apps" class="apps"></div>
+      </div>
+    </section>
+
+    <!-- TRENDS -->
+    <section id="v-trends" class="view" hidden>
+      <div class="seg" role="tablist">
+        <button data-n="7" aria-selected="true">7 days</button><button data-n="30" aria-selected="false">30 days</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Daily screen time <span class="muted small">· tap a day to open it</span></div>
+        <div id="w-bars" class="chart"></div>
+        <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>Within goal</span><span><i class="sw" style="background:var(--bad)"></i>Over goal</span><span><i class="sw dash"></i>Goal</span></div>
+      </div>
+      <div class="tiles">
+        <div class="tile"><div class="label">Average / day</div><div class="val" id="w-avg">–</div><div class="sub" id="w-vs"></div></div>
+        <div class="tile"><div class="label">Pickups / day</div><div class="val" id="w-pick">–</div><div class="sub" id="w-pick-vs"></div></div>
+        <div class="tile"><div class="label">Best day</div><div class="val" id="w-best">–</div><div class="sub" id="w-best-sub"></div></div>
+        <div class="tile"><div class="label">Days within goal</div><div class="val" id="w-goal">–</div><div class="sub" id="w-goal-sub"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Categories</div>
+        <div id="w-catbar" class="stack"></div>
+        <div id="w-cats" class="cat-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Top apps <span class="muted small">· average per day</span></div>
+        <div id="w-apps" class="apps"></div>
+      </div>
+    </section>
+
+    <!-- COACH -->
+    <section id="v-coach" class="view chat-view" hidden>
+      <div class="chat-head"><span id="c-ai" class="pill small"></span><button class="btn small-btn" id="c-clear">Clear</button></div>
+      <div id="c-msgs" class="msgs" aria-live="polite"></div>
+      <div class="composer">
+        <div class="chips-row" id="c-chips">
+          <button data-q="today">📱 Today</button><button data-q="week">📊 Week</button><button data-q="improve">💡 Improve</button>
+          <button data-q="plan">🗓️ Plan</button><button data-q="best">🏆 Best day</button><button data-q="apps">🔝 Apps</button>
+          <button data-q="focus 25">⏱️ Focus 25</button><button data-q="help">❓ Help</button>
+        </div>
+        <form id="c-form" class="composer-row">
+          <input id="c-input" maxlength="500" autocomplete="off" placeholder="Ask anything or type a command…" aria-label="Message">
+          <button class="btn primary" aria-label="Send">➤</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- FOCUS -->
+    <section id="v-focus" class="view" hidden>
+      <div class="card focus-card">
+        <div class="timer">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="ring-bg"/><circle cx="60" cy="60" r="52" class="ring" id="f-ring"/></svg>
+          <div class="timer-text"><b id="f-time">25:00</b><span id="f-label" class="muted small">Ready</span></div>
+        </div>
+        <div id="f-setup">
+          <div class="presets" id="f-presets">
+            <button data-m="15">15m</button><button data-m="25" class="on">25m</button><button data-m="45">45m</button><button data-m="60">60m</button><button data-m="90">90m</button>
+          </div>
+          <input id="f-what" maxlength="60" placeholder="What are you focusing on? (optional)">
+          <button class="btn primary wide" id="f-start">Start focus</button>
+          <p class="muted small center">Put the phone down. When the time's up you'll get a notification, with any distracting apps you opened.</p>
+        </div>
+        <div id="f-running" hidden>
+          <button class="btn wide" id="f-stop">Stop early</button>
+        </div>
+      </div>
+      <div id="f-result" class="card result" hidden></div>
+      <div class="tiles">
+        <div class="tile"><div class="label">Today</div><div class="val" id="f-today">0m</div><div class="sub" id="f-today-sub"></div></div>
+        <div class="tile"><div class="label">Streak</div><div class="val" id="f-streak">0</div><div class="sub">days with a focus session</div></div>
+        <div class="tile"><div class="label">Last 7 days</div><div class="val" id="f-week">0m</div><div class="sub" id="f-week-sub"></div></div>
+        <div class="tile"><div class="label">Distraction-free</div><div class="val" id="f-clean">–</div><div class="sub">of sessions (7 days)</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Sessions</div>
+        <div id="f-sessions" class="list"></div>
+      </div>
+    </section>
+
+    <!-- GOALS -->
+    <section id="v-goals" class="view" hidden>
+      <div class="card">
+        <div class="card-title">Daily goals</div>
+        <label class="field"><span>Screen time goal <b id="g-goal-v"></b></span><input type="range" id="g-goal" min="30" max="600" step="15"></label>
+        <label class="field"><span>Pickup goal <b id="g-pick-v"></b></span><input type="range" id="g-pick" min="10" max="200" step="5"></label>
+        <label class="check"><input type="checkbox" id="g-notify"> Remind me when I hit a limit or my daily goal</label>
+      </div>
+      <div class="card">
+        <div class="card-title">App limits</div>
+        <div id="g-limits" class="list"></div>
+        <div class="row add-limit">
+          <select id="g-limit-app" aria-label="App"></select>
+          <input id="g-limit-min" type="number" min="5" max="600" step="5" value="30" aria-label="Minutes per day">
+          <button class="btn primary" id="g-limit-add">Add</button>
+        </div>
+        <p class="muted small">You get a nudge at 80% and when the limit is reached (WorkPulse checks every 15 minutes).</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Bedtime</div>
+        <div class="row two">
+          <label class="field"><span>Bedtime</span><input type="time" id="g-bed"></label>
+          <label class="field"><span>Wake up</span><input type="time" id="g-wake"></label>
+        </div>
+        <label class="check"><input type="checkbox" id="g-bed-remind"> Remind me if I'm on my phone after bedtime</label>
+      </div>
+      <div class="card">
+        <div class="card-title">Habits <span class="muted small">· tick them off each day</span></div>
+        <div id="g-habits" class="list"></div>
+        <form class="row" id="g-habit-form">
+          <input id="g-habit" maxlength="40" placeholder="New habit, e.g. Read 20 min">
+          <button class="btn primary">Add</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- MORE -->
+    <section id="v-more" class="view" hidden>
+      <div class="card">
+        <div class="card-title">Permissions</div>
+        <div class="perm"><span>Usage access <span class="muted small">(needed to track apps)</span></span><span id="m-usage"></span></div>
+        <div class="perm"><span>Notifications <span class="muted small">(limits, bedtime, focus)</span></span><span id="m-notif"></span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Distracting categories</div>
+        <p class="muted small">Used for the balance score and the focus report.</p>
+        <div id="m-distracting" class="chips"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Private apps</div>
+        <p class="muted small">Apps whose name contains any of these words are never named: their time counts as "Private apps". Banking and payment apps are covered by default.</p>
+        <textarea id="m-private" rows="3"></textarea>
+        <div class="row"><button class="btn" id="m-private-save">Save</button><span class="muted small" id="m-private-msg"></span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Appearance</div>
+        <div class="seg" id="m-theme"><button data-t="auto">Auto</button><button data-t="dark">Dark</button><button data-t="light">Light</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Your data</div>
+        <p class="muted small">Everything stays on this phone. Nothing is uploaded anywhere.</p>
+        <div class="row"><button class="btn" id="m-export">Export CSV</button><button class="btn danger" id="m-wipe">Delete all data</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title">AI coach <span class="muted small">· optional</span></div>
+        <p class="small" id="m-coach-status"></p>
+        <div class="row" id="m-coach-set"><input id="m-coach-key" type="password" autocomplete="off" placeholder="Gemini API key (AQ.… or AIza…)"><button class="btn primary" id="m-coach-save">Save</button></div>
+        <button class="btn" id="m-coach-remove" hidden>Remove key</button>
+        <p class="muted small">Commands like <i>today</i>, <i>week</i>, <i>limit</i> and <i>focus</i> work without it, offline. For questions in your own words the coach uses Google Gemini with <b>your own</b> Gemini API key (aistudio.google.com → Get API key). When you ask one, a short summary of your stats (totals, top app names, goals; never private apps) and your message go to Google. On Google's free tier, Google may use what you send to improve its products. The key stays on this phone.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Laptop sync <span class="muted small">· optional</span></div>
+        <p class="muted small" id="m-laptop"></p>
+        <button class="btn" id="m-laptop-btn">Connect to a laptop</button>
+      </div>
+      <p class="muted small center" id="m-version"></p>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button data-v="today" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>Today</button>
+    <button data-v="trends"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Trends</button>
+    <button data-v="coach"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 3v-3H4z"/><path d="M8 10h8M8 13h5"/></svg>Coach</button>
+    <button data-v="focus"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="7"/><path d="M12 13V9.5M10 3h4"/></svg>Focus</button>
+    <button data-v="goals"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.8"/></svg>Goals</button>
+    <button data-v="more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>More</button>
+  </nav>
+
+  <div id="sheet" class="sheet" hidden>
+    <div class="sheet-box" role="dialog" aria-modal="true">
+      <div class="sheet-head"><b id="s-name"></b><button class="icon" id="s-close" aria-label="Close">✕</button></div>
+      <div class="tiles">
+        <div class="tile"><div class="label">Today</div><div class="val" id="s-today"></div><div class="sub" id="s-today-sub"></div></div>
+        <div class="tile"><div class="label">14-day average</div><div class="val" id="s-avg"></div><div class="sub" id="s-avg-sub"></div></div>
+      </div>
+      <div id="s-bars" class="chart"></div>
+      <label class="field"><span>Category</span><select id="s-cat"></select></label>
+      <label class="field"><span>Daily limit (minutes, 0 = none)</span><input type="number" id="s-limit" min="0" max="600" step="5"></label>
+      <button class="btn primary wide" id="s-save">Save</button>
+    </div>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+
+  <script>if (!window.WorkPulse) document.write('<script src="dev-mock.js"><\/script>');</script>
+  <script src="app.js"></script>
+  <script src="chat.js"></script>
+</body>
+</html>

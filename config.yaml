@@ -1,0 +1,219 @@
+# WorkPulse configuration. Edit freely: the running tracker reloads it within ~10 s.
+# Changes made in the dashboard's Settings tab are stored in data/settings.yaml (merged on top of this file).
+
+tracking:
+  sample_interval_s: 5        # how often the agent checks your state
+  idle_after_s: 120           # no input for 2 min  -> idle
+  away_after_s: 600           # no input for 10 min -> away (also: screen locked / sleep)
+  flush_interval_s: 15        # how often sessions are written to the DB
+
+agent:
+  # auto   = send to the backend; if it isn't running, write straight to the local DB (nothing gets stuck)
+  # http   = backend only (buffered in data/outbox.jsonl while it's down)
+  # direct = local DB only
+  mode: auto
+
+server:
+  host: 127.0.0.1             # localhost only. Don't change to 0.0.0.0 unless you know why.
+  port: 8787                  # dashboard: http://127.0.0.1:8787
+  # Paired phones on your Wi-Fi can connect (mobile app). Don't edit this line: `.\workpulse lan on|off` and the
+  # dashboard toggle save the real value in data/settings.yaml, which overrides it. Check with `.\workpulse lan`.
+  lan: false
+
+whatsapp:
+  enabled: true
+  provider: twilio            # twilio (sandbox) | meta (WhatsApp Cloud API) | console (no sending, just logs)
+  public_url: ""              # optional, your tunnel URL e.g. https://abc.ngrok-free.app (for signature checks)
+  schedule:                   # local time, 24h. "" turns one off.
+    morning: "08:00"
+    midday: "13:30"
+    night: "21:30"
+    weekly: "sun 19:00"
+  nudges:
+    enabled: true
+    entertainment_min: 60     # ping when today's Entertainment passes 1h, 2h, ...
+    idle_min: 120             # laptop on but unused this long in work hours (0 = off)
+    work_hours: ["10:00", "20:00"]
+    quiet_hours: ["23:00", "07:30"]
+    task_reminder_hours: 24
+
+coach:
+  model: claude-opus-5-5      # needs ANTHROPIC_API_KEY in .env; without it, plain templates are used
+  effort: low
+  max_tokens: 4000
+  fallbacks: true
+
+phone:
+  default_device: phone
+  # Phone apps -> category. Key = lowercase text found in the app name or package (first match wins).
+  apps:
+    youtube studio: Content Creation
+    capcut: Content Creation
+    instagram: Entertainment
+    youtube: Entertainment
+    netflix: Entertainment
+    hotstar: Entertainment
+    primevideo: Entertainment
+    prime video: Entertainment
+    spotify: Entertainment
+    snapchat: Entertainment
+    reddit: Entertainment
+    facebook: Entertainment
+    twitter: Entertainment
+    "x.com": Entertainment
+    moj: Entertainment
+    josh: Entertainment
+    bgmi: Entertainment
+    pubg: Entertainment
+    freefire: Entertainment
+    game: Entertainment
+    whatsapp: Communication
+    telegram: Communication
+    discord: Communication
+    slack: Communication
+    gmail: Communication
+    outlook: Communication
+    teams: Communication
+    meet: Communication
+    zoom: Communication
+    linkedin: Communication
+    messages: Communication
+    phone: Communication
+    dialer: Communication
+    chrome: Browsing
+    safari: Browsing
+    firefox: Browsing
+    brave: Browsing
+    browser: Browsing
+    github: Coding
+    termux: Coding
+    stack: Coding
+    leetcode: Coding
+    chatgpt: Learning/AI
+    claude: Learning/AI
+    gemini: Learning/AI
+    perplexity: Learning/AI
+    coursera: Learning/AI
+    udemy: Learning/AI
+    duolingo: Learning/AI
+    kindle: Learning/AI
+    books: Learning/AI
+    notion: Learning/AI
+    obsidian: Learning/AI
+    medium: Learning/AI
+    figma: Design
+    canva: Design
+
+privacy:
+  capture_titles: true        # set false to never store window titles (they're still used in memory to pick a category)
+  # Apps (process name, no .exe) and title keywords that are NEVER logged.
+  # Matching time is stored only as app "(private)" with no title.
+  exclude_apps: [keepass, keepassxc, 1password, bitwarden]
+  # Applied to laptop window titles AND phone app names/packages (com.something.bank).
+  exclude_keywords: [bank, banking, netbanking, paytm, phonepe, "google pay", paisa, gpay, bhim, ippb, yono, imobile,
+                     "payments bank", wallet, incognito, inprivate, "private browsing", password, keepass, bitwarden, 1password]
+
+scoring:
+  productive_categories: [Coding, Learning/AI, Design, Content Creation]
+  daily_target_min: 240       # productive minutes for full "deep work" points
+  streak_break_tolerance_min: 3
+  streak_target_min: 90       # a streak this long earns full streak points
+  min_break_min: 5            # gaps between active time shorter than this aren't counted as breaks
+
+categories:
+  default: Other
+  # Browsers get their category from the window title (rules below), else "Browsing".
+  browsers: [chrome, msedge, firefox, brave, opera, vivaldi, arc, zen]
+
+  # Process name (lowercase, no .exe) -> category
+  apps:
+    code: Coding
+    cursor: Coding
+    windsurf: Coding
+    pycharm64: Coding
+    idea64: Coding
+    devenv: Coding
+    sublime_text: Coding
+    notepad++: Coding
+    windowsterminal: Coding
+    cmd: Coding
+    powershell: Coding
+    pwsh: Coding
+    wsl: Coding
+    git-bash: Coding
+    mintty: Coding
+    postman: Coding
+    docker desktop: Coding
+    claude: Coding
+    chatgpt: Learning/AI
+    perplexity: Learning/AI
+    jupyter-lab: Learning/AI
+    anaconda-navigator: Learning/AI
+    obsidian: Learning/AI
+    notion: Learning/AI
+    acrord32: Learning/AI
+    acrobat: Learning/AI
+    sumatrapdf: Learning/AI
+    figma: Design
+    photoshop: Design
+    illustrator: Design
+    canva: Design
+    blender: Design
+    obs64: Content Creation
+    capcut: Content Creation
+    resolve: Content Creation
+    premiere pro: Content Creation
+    audacity: Content Creation
+    whatsapp: Communication
+    whatsapp.root: Communication
+    telegram: Communication
+    discord: Communication
+    slack: Communication
+    ms-teams: Communication
+    teams: Communication
+    zoom: Communication
+    outlook: Communication
+    olk: Communication
+    spotify: Entertainment
+    vlc: Entertainment
+    netflix: Entertainment
+    steam: Entertainment
+    epicgameslauncher: Entertainment
+    explorer: Other
+
+  # Title rules, checked top to bottom; first match wins.
+  # `any`: title contains at least one of these. `and_any` (optional): AND at least one of these.
+  # By default rules only apply to browsers; set `all_apps: true` to apply to every app.
+  title_rules:
+    - any: [youtube]
+      and_any: [tutorial, course, lecture, "how to", explained, crash course, freecodecamp, "machine learning", " ml ", python, "deep learning", leetcode, "system design", podcast]
+      category: Learning/AI
+    - any: [youtube studio]
+      category: Content Creation
+    - any: [youtube, netflix, prime video, hotstar, jiocinema, instagram, reddit, twitch, "x.com", twitter, facebook, 9gag, crunchyroll]
+      category: Entertainment
+    - any: [github, gitlab, stack overflow, stackoverflow, localhost, 127.0.0.1, vercel, netlify, render.com, "docs.python", mdn, devpost, replit, codeforces, leetcode, hackerrank]
+      category: Coding
+    - any: [chatgpt, claude, gemini, perplexity, hugging face, huggingface, kaggle, colab, coursera, udemy, nptel, arxiv, medium, papers with code, deeplearning.ai, wikipedia]
+      category: Learning/AI
+    - any: [figma, canva, dribbble, behance]
+      category: Design
+    - any: [gmail, outlook, whatsapp, slack, discord, telegram, linkedin, google meet, zoom, teams]
+      category: Communication
+    - any: [capcut, descript, "creator studio", notion]
+      category: Content Creation
+
+# Pretty names for the CLI / dashboard
+app_aliases:
+  code: VS Code
+  msedge: Edge
+  chrome: Chrome
+  firefox: Firefox
+  brave: Brave
+  windowsterminal: Terminal
+  pycharm64: PyCharm
+  idea64: IntelliJ
+  explorer: File Explorer
+  whatsapp.root: WhatsApp
+  obs64: OBS
+  claude: Claude
